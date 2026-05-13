@@ -36,6 +36,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
+    const renderer = new marked.Renderer();
+    renderer.link = (href, title, text) =>
+      `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+    marked.use({ renderer });
+
+    fetch('content/session-logs.md')
+      .then(r => r.text())
+      .then(text => {{
+        document.getElementById('content-body').innerHTML = marked.parse(text);
+      }});
+  </script>
+  <script>
     fetch('content/session-logs.md')
       .then(r => r.text())
       .then(text => {
