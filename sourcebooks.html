@@ -30,46 +30,36 @@
 
     <div id="content">
       <h2>Sourcebooks</h2>
-      <div id="content-body"><p>Loading...</p></div>
+
+      <h3>FBI &amp; The Bureau</h3>
+      <ul class="file-list">
+        <li><a href="assets/sourcebooks/FBI_culture_in_the_1990s_and_American_Law_Enforcement_Mindset.pdf" target="_blank" rel="noopener">FBI Culture in the 1990s and American Law Enforcement Mindset</a></li>
+        <li><a href="assets/sourcebooks/FBI%20Federal%20Crimes%20Reference%20Guide%20%281997%29.pdf" target="_blank" rel="noopener">FBI Federal Crimes Reference Guide (1997)</a></li>
+        <li><a href="assets/sourcebooks/FBI%20Field%20Agent%20Tradecraft%20Sourcebook%20%E2%80%93%201997.pdf" target="_blank" rel="noopener">FBI Field Agent Tradecraft Sourcebook – 1997</a></li>
+        <li><a href="assets/sourcebooks/FBI%20Forms%20Reference%20Guide%20%281997%29.pdf" target="_blank" rel="noopener">FBI Forms Reference Guide (1997)</a></li>
+        <li><a href="assets/sourcebooks/FBI%20Phoenix%20Field%20Office%20Agent%20Legal%20Handbook%20%281997%29.pdf" target="_blank" rel="noopener">FBI Phoenix Field Office Agent Legal Handbook (1997)</a></li>
+        <li><a href="assets/sourcebooks/Forensics_for_FBI_Agents.pdf" target="_blank" rel="noopener">Forensics for FBI Agents</a></li>
+        <li><a href="assets/sourcebooks/The_Federal_Bureau_of_Investigation.pdf" target="_blank" rel="noopener">The Federal Bureau of Investigation</a></li>
+      </ul>
+
+      <h3>Phoenix &amp; Arizona</h3>
+      <ul class="file-list">
+        <li><a href="assets/sourcebooks/Arizona_Indian_Reservations.pdf" target="_blank" rel="noopener">Arizona Indian Reservations</a></li>
+        <li><a href="assets/sourcebooks/History_of_FBI_Phoenix_Division_Office.pdf" target="_blank" rel="noopener">History of FBI Phoenix Division Office</a></li>
+        <li><a href="assets/sourcebooks/History_of_Phoenix_AZ.pdf" target="_blank" rel="noopener">History of Phoenix, AZ</a></li>
+        <li><a href="assets/sourcebooks/Indianola%20Avenue%20Field%20Office%20%28FBI%29%2C%20Phoenix%2C%20AZ%20plus%20NPCer.pdf" target="_blank" rel="noopener">Indianola Avenue Field Office (FBI), Phoenix, AZ plus NPCer</a></li>
+        <li><a href="assets/sourcebooks/Phoenix%2C%20Arizona%20in%201997_%20Geography%20%26%20Local%20Culture%20Sourcebook.pdf" target="_blank" rel="noopener">Phoenix, Arizona in 1997: Geography &amp; Local Culture Sourcebook</a></li>
+      </ul>
+
+      <!-- To add a new sourcebook:
+           1. Upload the PDF to assets/sourcebooks/ on GitHub
+           2. Copy one of the <li> lines above and paste it in the right section
+           3. Change the filename in href="assets/sourcebooks/FILENAME.pdf"
+           4. Change the display text between >HERE</a>
+           Note: replace spaces in filenames with %20 -->
+
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/sourcebooks.md')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(text => {
-        const div = document.getElementById('content-body');
-        div.innerHTML = marked.parse(text);
-        div.querySelectorAll('a').forEach(a => {
-          a.target = '_blank';
-          a.rel = 'noopener';
-        });
-      })
-      .catch(() => {
-        document.getElementById('content-body').innerHTML =
-          '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
-      });
-  </script>
-  <script>
-    const renderer = new marked.Renderer();
-    renderer.link = (href, title, text) =>
-      `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
-    marked.use({ renderer });
-
-    fetch('content/sourcebooks.md')
-      .then(r => r.text())
-      .then(text => {
-        document.getElementById('content-body').innerHTML = marked.parse(text);
-      });
-  </script>
-  <script>
-    fetch('content/sourcebooks.md')
-      .then(r => r.text())
-      .then(text => {
-        document.getElementById('content-body').innerHTML = marked.parse(text);
-      });
-  </script>
 
 </body>
 </html>

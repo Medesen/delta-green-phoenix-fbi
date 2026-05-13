@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   <script>
     fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/miscellaneous.md')
       .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
@@ -49,25 +49,6 @@
       .catch(() => {
         document.getElementById('content-body').innerHTML =
           '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
-      });
-  </script>
-  <script>
-    const renderer = new marked.Renderer();
-    renderer.link = (href, title, text) =>
-      `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
-    marked.use({ renderer });
-
-    fetch('content/miscellaneous.md')
-      .then(r => r.text())
-      .then(text => {
-        document.getElementById('content-body').innerHTML = marked.parse(text);
-      });
-  </script>
-  <script>
-    fetch('content/miscellaneous.md')
-      .then(r => r.text())
-      .then(text => {
-        document.getElementById('content-body').innerHTML = marked.parse(text);
       });
   </script>
 
