@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: Medesen/delta-green-phoenix-fbi
   branch: main
+  base_url: https://api.netlify.com
 
 media_folder: assets/uploads
 public_folder: /assets/uploads
