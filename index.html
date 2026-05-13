@@ -36,6 +36,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
+    fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/home.md')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(text => {
+        const div = document.getElementById('content-body');
+        div.innerHTML = marked.parse(text);
+        div.querySelectorAll('a').forEach(a => {
+          a.target = '_blank';
+          a.rel = 'noopener';
+        });
+      })
+      .catch(() => {
+        document.getElementById('content-body').innerHTML =
+          '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
+      });
+  </script>
+  <script>
     const renderer = new marked.Renderer();
     renderer.link = (href, title, text) =>
       `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
@@ -43,9 +59,9 @@
 
     fetch('content/home.md')
       .then(r => r.text())
-      .then(text => {{
+      .then(text => {
         document.getElementById('content-body').innerHTML = marked.parse(text);
-      }});
+      });
   </script>
   <script>
     fetch('content/home.md')
