@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phoenix FBI — Delta Green</title>
+  <title>Sourcebooks — Phoenix FBI - Delta Green</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,26 +17,26 @@
     <div id="sidebar">
       <nav>
         <ul>
-          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="index.html">Home</a></li>
           <li><a href="dramatis-personae.html">Dramatis Personae</a></li>
           <li><a href="session-logs.html">Session Logs</a></li>
           <li><a href="handouts.html">Handouts</a></li>
           <li><a href="maps.html">Maps</a></li>
-          <li><a href="sourcebooks.html">Sourcebooks</a></li>
+          <li><a href="sourcebooks.html" class="active">Sourcebooks</a></li>
           <li><a href="miscellaneous.html">Miscellaneous</a></li>
         </ul>
       </nav>
     </div>
 
     <div id="content">
-      <h2>Home</h2>
+      <h2>Sourcebooks</h2>
       <div id="content-body"><p>Loading...</p></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    fetch('content/home.md')
+    fetch('content/sourcebooks.md')
       .then(r => r.text())
       .then(text => {
         document.getElementById('content-body').innerHTML = marked.parse(text);
