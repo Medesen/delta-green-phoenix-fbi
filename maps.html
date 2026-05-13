@@ -29,21 +29,18 @@
 
     <div id="content">
       <h2>Maps</h2>
-
-      <p>Locations, floorplans, and regional maps.</p>
-
-      <!-- To add a map image: place the image file in assets/maps/, then use the
-           <img> tag below. Remove the comment markers (the arrows) to activate it. -->
-
-      <!-- Example:
-      <h3>Harwich, Massachusetts</h3>
-      <img src="assets/maps/harwich.jpg" alt="Map of Harwich" style="max-width:100%; border:1px solid #2e2e2e;">
-      -->
-
-      <h3>No maps yet.</h3>
-
+      <div id="content-body"><p>Loading...</p></div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    fetch('content/maps.md')
+      .then(r => r.text())
+      .then(text => {
+        document.getElementById('content-body').innerHTML = marked.parse(text);
+      });
+  </script>
 
 </body>
 </html>

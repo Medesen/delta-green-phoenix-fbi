@@ -10,7 +10,7 @@
 
   <div id="header">
     <h1>Phoenix FBI - Delta Green</h1>
-    <span class="subtitle">En Delta Green-kampagne</span>
+    <span class="subtitle">A Delta Green Campaign</span>
   </div>
 
   <div id="page">
@@ -29,26 +29,18 @@
 
     <div id="content">
       <h2>Home</h2>
-
-      <p>
-        Velkommen. Dette websted indeholder materialer til vores Delta Green-kampagne.
-        Brug menuen til venstre til at navigere mellem sektionerne.
-      </p>
-
-      <!-- Replace the text below with a campaign introduction or blurb -->
-      <p>
-        De følgende sider dokumenterer vores agenters indsats — deres
-        succeser, deres fiaskoer og hvad de har valgt at huske.
-      </p>
-
-      <h3>Quick Links</h3>
-      <ul>
-        <li><a href="session-logs.html">Latest session log</a></li>
-        <li><a href="handouts.html">Handouts</a></li>
-        <li><a href="dramatis-personae.html">Agents &amp; NPCs</a></li>
-      </ul>
+      <div id="content-body"><p>Loading...</p></div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    fetch('content/home.md')
+      .then(r => r.text())
+      .then(text => {
+        document.getElementById('content-body').innerHTML = marked.parse(text);
+      });
+  </script>
 
 </body>
 </html>

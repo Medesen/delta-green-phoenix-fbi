@@ -29,32 +29,18 @@
 
     <div id="content">
       <h2>Dramatis Personae</h2>
-
-      <!-- ── AGENTS section ── -->
-      <h3>Agents</h3>
-      <p>
-        <!-- Add player characters here. Example format below — copy/paste to add more. -->
-      </p>
-
-      <!-- Example agent entry — duplicate this block for each agent -->
-      <h3>Agent [Codename]</h3>
-      <p>
-        <strong>Real name:</strong> [Name]<br>
-        <strong>Profession:</strong> [e.g. FBI Special Agent]<br>
-        <strong>Player:</strong> [Player name]
-      </p>
-      <p>
-        [Brief description or background. Replace this text.]
-      </p>
-
-      <!-- ── NPCs section ── -->
-      <h3>Notable NPCs</h3>
-      <p>
-        <!-- Add NPCs here using the same format. -->
-      </p>
-
+      <div id="content-body"><p>Loading...</p></div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    fetch('content/dramatis-personae.md')
+      .then(r => r.text())
+      .then(text => {
+        document.getElementById('content-body').innerHTML = marked.parse(text);
+      });
+  </script>
 
 </body>
 </html>

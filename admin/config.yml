@@ -1,0 +1,46 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: assets/uploads
+public_folder: /assets/uploads
+
+collections:
+  - name: pages
+    label: Pages
+    files:
+      - name: home
+        label: Home
+        file: content/home.md
+        fields:
+          - {label: Content, name: body, widget: markdown}
+
+      - name: dramatis-personae
+        label: Dramatis Personae
+        file: content/dramatis-personae.md
+        fields:
+          - {label: Content, name: body, widget: markdown}
+
+      - name: session-logs
+        label: Session Logs
+        file: content/session-logs.md
+        fields:
+          - {label: Content, name: body, widget: markdown}
+
+      - name: handouts
+        label: Handouts
+        file: content/handouts.md
+        fields:
+          - {label: Content, name: body, widget: markdown}
+
+      - name: maps
+        label: Maps
+        file: content/maps.md
+        fields:
+          - {label: Content, name: body, widget: markdown}
+
+      - name: miscellaneous
+        label: Miscellaneous
+        file: content/miscellaneous.md
+        fields:
+          - {label: Content, name: body, widget: markdown}

@@ -29,25 +29,18 @@
 
     <div id="content">
       <h2>Handouts</h2>
-
-      <p>Documents, photographs, and other materials the agents have encountered.</p>
-
-      <!-- Add handouts below. Each file goes on its own line inside the <ul>. -->
-      <!-- To link a file: place it in the assets/handouts/ folder, then link it here. -->
-
-      <h3>Session 1</h3>
-      <ul class="file-list">
-        <!-- Example entry:
-        <li>
-          <a href="assets/handouts/police-report.pdf">Police Report — Harwich, MA</a>
-          <span class="note">PDF</span>
-        </li>
-        -->
-        <li>No handouts yet.</li>
-      </ul>
-
+      <div id="content-body"><p>Loading...</p></div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    fetch('content/handouts.md')
+      .then(r => r.text())
+      .then(text => {
+        document.getElementById('content-body').innerHTML = marked.parse(text);
+      });
+  </script>
 
 </body>
 </html>
