@@ -124,6 +124,10 @@
       var a = document.createElement('a');
       a.href = item.url;
       a.textContent = item.title;
+      if (item.new_tab) {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
       li.appendChild(a);
       var note = document.createElement('span');
       note.className = 'note';

@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import re
+from urllib.parse import quote
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -135,7 +136,7 @@ def scan_folder(folder, page_url):
     standalone_md = [n for n in files if n.endswith('.md')]
     media_files = [n for n in files if not n.endswith('.md')]
 
-    # Standalone .md files — content from file, tags/caption from CSV
+    # Standalone .md files — link to the containing page (rendered inline there)
     for fname in sorted(standalone_md):
         row = meta_map.get(fname, {})
         tags = parse_tags(row.get('tags', ''))
@@ -145,19 +146,23 @@ def scan_folder(folder, page_url):
             'type': 'media',
             'title': row.get('caption', fname[:-3]),
             'url': page_url,
+            'new_tab': False,
             'body': body,
             'tags': tags,
         })
 
-    # Media files — all metadata from CSV
+    # Media files — link directly to the file so it opens like clicking on it
     for fname in sorted(media_files):
         row = meta_map.get(fname, {})
         tags = parse_tags(row.get('tags', ''))
         all_tags.update(tags)
+        rel = os.path.relpath(os.path.join(folder, fname), REPO_ROOT)
+        direct_url = quote(rel.replace(os.sep, '/'), safe='/')
         items.append({
             'type': 'media',
             'title': row.get('caption', fname),
-            'url': page_url,
+            'url': direct_url,
+            'new_tab': True,
             'body': row.get('notes', ''),
             'tags': tags,
         })
