@@ -93,10 +93,23 @@
     return wrap;
   }
 
+  function fetchIgnoreList(folder) {
+    return fetch(RAW + folder + '/.mediaignore')
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (text) {
+        return text.split(/\r?\n/)
+          .map(function (l) { return l.trim(); })
+          .filter(function (l) { return l && !l.startsWith('#'); });
+      })
+      .catch(function () { return []; });
+  }
+
   window.initMediaSection = function (folder, containerEl) {
+    fetchIgnoreList(folder).then(function (ignored) {
     fetch(API + folder)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (files) {
+        files = files.filter(function (f) { return ignored.indexOf(f.name) === -1; });
         var mdSet = {};
         files.forEach(function (f) { if (f.name.endsWith('.md')) mdSet[f.name] = true; });
 
@@ -168,5 +181,6 @@
       .catch(function () {
         containerEl.innerHTML = '<p style="color:#888">Could not load content. Try refreshing.</p>';
       });
+    });
   };
 })();
