@@ -1,5 +1,5 @@
 (function () {
-  var INDEX_URL = 'https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/search_index.json';
+  var INDEX_URL = 'search_index.json';
   var _index = null;
   var _loadPromise = null;
 
