@@ -84,9 +84,17 @@
       return h;
     }
 
+    function nameToId(name) {
+      return name.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+    }
+
     function renderPerson(row) {
       var entry = document.createElement('div');
       entry.className = 'person-entry';
+      entry.id = nameToId(row.name);
 
       // Thumbnail
       var thumb = document.createElement('div');

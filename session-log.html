@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Log — Phoenix FBI - Delta Green</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="header">
+    <h1>Phoenix FBI - Delta Green</h1>
+    <span class="subtitle">A Delta Green Campaign</span>
+  </div>
+
+  <div id="page">
+    <div id="sidebar">
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="sourcebooks.html">Sourcebooks</a></li>
+          <li><a href="dramatis-personae.html">Dramatis Personae</a></li>
+          <li><a href="session-logs.html" class="active">Session Logs</a></li>
+          <li><a href="handouts.html">Handouts</a></li>
+          <li><a href="maps.html">Maps</a></li>
+          <li><a href="miscellaneous.html">Miscellaneous</a></li>
+        </ul>
+      </nav>
+      <hr class="sidebar-divider">
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="Search…" autocomplete="off">
+        <div id="search-dropdown" class="search-dropdown"></div>
+      </div>
+    </div>
+
+    <div id="content">
+      <h2>Loading…</h2>
+      <div id="log-body"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  <script src="search.js"></script>
+  <script>
+    var REPO = 'Medesen/delta-green-phoenix-fbi';
+    var RAW  = 'https://raw.githubusercontent.com/' + REPO + '/main/';
+
+    function parseFrontmatter(text) {
+      var match = text.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?/);
+      if (!match) return { meta: {}, body: text };
+      var meta = {};
+      match[1].split(/\r?\n/).forEach(function (line) {
+        var i = line.indexOf(':');
+        if (i > 0) meta[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+      });
+      return { meta: meta, body: text.slice(match[0].length).trim() };
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var log    = params.get('log');
+    var h2     = document.querySelector('#content h2');
+    var body   = document.getElementById('log-body');
+
+    if (!log) {
+      h2.textContent = 'No log specified';
+      body.innerHTML = '<p style="color:#888">No session log was specified in the URL.</p>';
+    } else {
+      fetch(RAW + 'assets/session_logs/' + encodeURIComponent(log))
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(function (text) {
+          var parsed = parseFrontmatter(text);
+          var title  = parsed.meta.title || log.replace(/\.md$/, '');
+          document.title = title + ' — Phoenix FBI - Delta Green';
+          h2.textContent  = title;
+          body.innerHTML  = marked.parse(parsed.body);
+        })
+        .catch(function () {
+          h2.textContent = 'Error';
+          body.innerHTML = '<p style="color:#888">Could not load this session log. Try refreshing.</p>';
+        });
+    }
+  </script>
+
+</body>
+</html>

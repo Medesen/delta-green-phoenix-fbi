@@ -48,6 +48,12 @@ def parse_session_filename(name):
     )
 
 
+def name_to_id(name):
+    slug = re.sub(r'[^a-z0-9\s]', '', name.lower())
+    slug = re.sub(r'\s+', '-', slug.strip())
+    return slug
+
+
 def read_text(path):
     with open(path, encoding='utf-8') as f:
         return f.read()
@@ -93,7 +99,8 @@ if os.path.isdir(session_dir):
         items.append({
             'type': 'session',
             'title': parse_session_filename(fname),
-            'url': 'session-logs.html',
+            'url': 'session-log.html?log=' + quote(fname),
+            'new_tab': True,
             'body': body,
             'tags': tags,
         })
@@ -113,10 +120,12 @@ if os.path.exists(csv_path):
                 heading += f' ({age})'
             if title_part:
                 heading += f', {title_part}'
+            slug = name_to_id(row.get('name', ''))
             items.append({
                 'type': 'character',
                 'title': heading,
-                'url': 'dramatis-personae.html',
+                'url': 'dramatis-personae.html#' + slug,
+                'new_tab': True,
                 'body': row.get('description', '').strip(),
                 'tags': tags,
             })

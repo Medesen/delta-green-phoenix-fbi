@@ -36,46 +36,37 @@
     <div id="content">
       <h2>Session Logs</h2>
       <div id="log-list"><p>Loading session logs...</p></div>
-      <div id="log-content" style="display:none">
-        <p><a href="#" id="back-link" style="font-size:0.9rem">← Back to all sessions</a></p>
-        <div id="log-body"></div>
-      </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   <script src="search.js"></script>
   <script>
-    const REPO = 'Medesen/delta-green-phoenix-fbi';
-    const FOLDER = 'assets/session_logs';
-    const RAW = 'https://raw.githubusercontent.com/' + REPO + '/main';
+    var REPO   = 'Medesen/delta-green-phoenix-fbi';
+    var FOLDER = 'assets/session_logs';
 
     function parseFilename(name) {
-      // 07_session_log_2026-05-06.md -> "Session 7 - 6 May 2026"
-      const m = name.match(/^(\d+)_session_log_(\d{4})-(\d{2})-(\d{2})\.md$/);
+      var m = name.match(/^(\d+)_session_log_(\d{4})-(\d{2})-(\d{2})\.md$/);
       if (!m) return name.replace('.md', '');
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       return 'Session ' + parseInt(m[1]) + ' — ' + parseInt(m[4]) + ' ' + months[parseInt(m[3])-1] + ' ' + m[2];
     }
 
     function showList(files) {
-      const listDiv = document.getElementById('log-list');
+      var listDiv = document.getElementById('log-list');
       if (files.length === 0) {
         listDiv.innerHTML = '<p>No session logs yet.</p>';
         return;
       }
-      const sorted = files.slice().sort(function(a, b) { return b.name.localeCompare(a.name); });
-      const ul = document.createElement('ul');
+      var sorted = files.slice().sort(function (a, b) { return b.name.localeCompare(a.name); });
+      var ul = document.createElement('ul');
       ul.className = 'file-list';
-      sorted.forEach(function(file) {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
+      sorted.forEach(function (file) {
+        var li = document.createElement('li');
+        var a  = document.createElement('a');
+        a.href   = 'session-log.html?log=' + encodeURIComponent(file.name);
+        a.target = '_blank';
+        a.rel    = 'noopener';
         a.textContent = parseFilename(file.name);
-        a.addEventListener('click', function(e) {
-          e.preventDefault();
-          showLog(file.name);
-        });
         li.appendChild(a);
         ul.appendChild(li);
       });
@@ -83,30 +74,10 @@
       listDiv.appendChild(ul);
     }
 
-    function showLog(filename) {
-      const listDiv = document.getElementById('log-list');
-      const contentDiv = document.getElementById('log-content');
-      const bodyDiv = document.getElementById('log-body');
-      bodyDiv.innerHTML = '<p>Loading...</p>';
-      listDiv.style.display = 'none';
-      contentDiv.style.display = 'block';
-
-      fetch(RAW + '/' + FOLDER + '/' + filename)
-        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-        .then(function(text) { bodyDiv.innerHTML = marked.parse(text); })
-        .catch(function() { bodyDiv.innerHTML = '<p style="color:#888">Could not load session log.</p>'; });
-    }
-
-    document.getElementById('back-link').addEventListener('click', function(e) {
-      e.preventDefault();
-      document.getElementById('log-list').style.display = 'block';
-      document.getElementById('log-content').style.display = 'none';
-    });
-
     fetch('https://api.github.com/repos/' + REPO + '/contents/' + FOLDER)
-      .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function(files) { showList(files.filter(function(f) { return f.name.endsWith('.md'); })); })
-      .catch(function() {
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (files) { showList(files.filter(function (f) { return f.name.endsWith('.md'); })); })
+      .catch(function () {
         document.getElementById('log-list').innerHTML =
           '<p style="color:#888">Could not load session list. Try refreshing.</p>';
       });
