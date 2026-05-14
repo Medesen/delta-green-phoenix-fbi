@@ -146,6 +146,15 @@
         container.innerHTML = '';
         renderSection('Agents', pcs, container);
         renderSection('Notable NPCs', npcs, container);
+
+        var hash = window.location.hash;
+        if (hash) {
+          var target = document.querySelector(hash);
+          if (target) {
+            var top = target.getBoundingClientRect().top + window.scrollY - 70;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          }
+        }
       })
       .catch(function () {
         document.getElementById('dp-container').innerHTML =
