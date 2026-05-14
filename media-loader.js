@@ -9,9 +9,7 @@
     var meta = {};
     match[1].split(/\r?\n/).forEach(function (line) {
       var i = line.indexOf(':');
-      if (i > 0) {
-        meta[line.slice(0, i).trim()] = line.slice(i + 1).trim();
-      }
+      if (i > 0) meta[line.slice(0, i).trim()] = line.slice(i + 1).trim();
     });
     return { meta: meta, body: text.slice(match[0].length).trim() };
   }
@@ -23,6 +21,35 @@
     if (['mp3','ogg','wav','m4a','flac'].indexOf(ext) >= 0) return 'audio';
     if (ext === 'md') return 'markdown';
     return 'other';
+  }
+
+  function fetchIgnoreList(folder) {
+    return fetch(RAW + folder + '/.mediaignore')
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (text) {
+        return text.split(/\r?\n/)
+          .map(function (l) { return l.trim(); })
+          .filter(function (l) { return l && !l.startsWith('#'); });
+      })
+      .catch(function () { return []; });
+  }
+
+  function renderFolderItem(name, onClick) {
+    var wrap = document.createElement('div');
+    wrap.className = 'media-item media-folder';
+    var icon = document.createElement('div');
+    icon.className = 'media-folder-icon';
+    icon.textContent = '▶';
+    wrap.appendChild(icon);
+    var cap = document.createElement('div');
+    cap.className = 'media-caption';
+    var a = document.createElement('a');
+    a.href = '#';
+    a.textContent = name;
+    a.addEventListener('click', function (e) { e.preventDefault(); onClick(); });
+    cap.appendChild(a);
+    wrap.appendChild(cap);
+    return wrap;
   }
 
   function renderMediaItem(fileName, meta, folder) {
@@ -93,94 +120,114 @@
     return wrap;
   }
 
-  function fetchIgnoreList(folder) {
-    return fetch(RAW + folder + '/.mediaignore')
-      .then(function (r) { return r.ok ? r.text() : ''; })
-      .then(function (text) {
-        return text.split(/\r?\n/)
-          .map(function (l) { return l.trim(); })
-          .filter(function (l) { return l && !l.startsWith('#'); });
-      })
-      .catch(function () { return []; });
-  }
+  window.initMediaSection = function (rootFolder, containerEl) {
+    var history = [];
 
-  window.initMediaSection = function (folder, containerEl) {
-    fetchIgnoreList(folder).then(function (ignored) {
-    fetch(API + folder)
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (files) {
-        files = files.filter(function (f) { return ignored.indexOf(f.name) === -1; });
+    function loadFolder(folder) {
+      containerEl.innerHTML = '<p>Loading...</p>';
+
+      Promise.all([
+        fetchIgnoreList(folder),
+        fetch(API + folder)
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      ]).then(function (results) {
+        var ignored  = results[0];
+        var allItems = results[1];
+
+        var skip = ignored.concat(['.gitkeep', '.mediaignore']);
+        var visible = allItems.filter(function (f) { return skip.indexOf(f.name) === -1; });
+
+        var dirs      = visible.filter(function (f) { return f.type === 'dir'; });
+        var fileItems = visible.filter(function (f) { return f.type === 'file'; });
+
         var mdSet = {};
-        files.forEach(function (f) { if (f.name.endsWith('.md')) mdSet[f.name] = true; });
+        fileItems.forEach(function (f) { if (f.name.endsWith('.md')) mdSet[f.name] = true; });
 
-        var toShow = files.filter(function (f) {
-          if (f.name === '.gitkeep') return false;
-          if (!f.name.endsWith('.md')) return true;
-          // Only show .md files that have no matching media file (standalone)
+        // Standalone .md files (no matching media companion)
+        var standaloneMd = fileItems.filter(function (f) {
+          if (!f.name.endsWith('.md')) return false;
           var base = f.name.slice(0, -3);
-          var hasMedia = files.some(function (m) {
+          return !fileItems.some(function (m) {
             return !m.name.endsWith('.md') && m.name.slice(0, m.name.lastIndexOf('.')) === base;
           });
-          return !hasMedia;
         });
 
-        toShow.sort(function (a, b) {
-          var aIsMd = a.name.endsWith('.md');
-          var bIsMd = b.name.endsWith('.md');
-          if (aIsMd && !bIsMd) return -1;
-          if (!aIsMd && bIsMd) return 1;
-          return a.name.localeCompare(b.name);
+        // Media files (non-.md)
+        var mediaFiles = fileItems.filter(function (f) { return !f.name.endsWith('.md'); });
+
+        dirs.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        standaloneMd.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        mediaFiles.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+        // Fetch standalone .md content
+        var mdPromises = standaloneMd.map(function (file) {
+          return fetch(RAW + folder + '/' + encodeURIComponent(file.name))
+            .then(function (r) { return r.text(); })
+            .then(function (text) { return { kind: 'section', html: marked.parse(parseFrontmatter(text).body) }; });
         });
 
-        if (toShow.length === 0) {
-          containerEl.innerHTML = '<p>Nothing here yet.</p>';
-          return Promise.resolve(null);
-        }
-
-        var promises = toShow.map(function (file) {
-          if (fileType(file.name) === 'markdown') {
-            // Standalone .md: fetch and render inline
-            return fetch(RAW + folder + '/' + encodeURIComponent(file.name))
-              .then(function (r) { return r.text(); })
-              .then(function (text) {
-                var parsed = parseFrontmatter(text);
-                var html = marked.parse(parsed.body);
-                return { type: 'section', html: html };
-              });
-          }
-          // Media file: check for companion .md
-          var base      = file.name.slice(0, file.name.lastIndexOf('.'));
-          var companion = base + '.md';
+        // Fetch companion metadata for media files
+        var mediaPromises = mediaFiles.map(function (file) {
+          var companion = file.name.slice(0, file.name.lastIndexOf('.')) + '.md';
           if (mdSet[companion]) {
             return fetch(RAW + folder + '/' + encodeURIComponent(companion))
               .then(function (r) { return r.text(); })
-              .then(function (text) {
-                var parsed = parseFrontmatter(text);
-                return { type: 'media', file: file, meta: parsed.meta };
-              });
+              .then(function (text) { return { kind: 'media', file: file, meta: parseFrontmatter(text).meta }; });
           }
-          return Promise.resolve({ type: 'media', file: file, meta: {} });
+          return Promise.resolve({ kind: 'media', file: file, meta: {} });
         });
 
-        return Promise.all(promises);
-      })
-      .then(function (items) {
-        if (!items) return;
-        var grid = document.createElement('div');
-        grid.className = 'media-grid';
-        items.forEach(function (item) {
-          if (item.type === 'section') {
-            grid.appendChild(renderMarkdownSection(item.html));
-          } else {
-            grid.appendChild(renderMediaItem(item.file.name, item.meta, folder));
+        return Promise.all(mdPromises.concat(mediaPromises)).then(function (resolved) {
+          containerEl.innerHTML = '';
+
+          // Back button
+          if (history.length > 0) {
+            var backP = document.createElement('p');
+            var backA = document.createElement('a');
+            backA.href = '#'; backA.textContent = '← Back';
+            backA.style.fontSize = '0.9rem';
+            backA.addEventListener('click', function (e) {
+              e.preventDefault();
+              loadFolder(history.pop());
+            });
+            backP.appendChild(backA);
+            containerEl.appendChild(backP);
           }
+
+          if (visible.length === 0) {
+            containerEl.appendChild(document.createTextNode('Nothing here yet.'));
+            return;
+          }
+
+          var grid = document.createElement('div');
+          grid.className = 'media-grid';
+
+          // 1. Standalone .md sections
+          resolved.slice(0, standaloneMd.length).forEach(function (item) {
+            grid.appendChild(renderMarkdownSection(item.html));
+          });
+
+          // 2. Subfolders
+          dirs.forEach(function (dir) {
+            grid.appendChild(renderFolderItem(dir.name, function () {
+              history.push(folder);
+              loadFolder(folder + '/' + dir.name);
+            }));
+          });
+
+          // 3. Media files
+          resolved.slice(standaloneMd.length).forEach(function (item) {
+            grid.appendChild(renderMediaItem(item.file.name, item.meta, folder));
+          });
+
+          containerEl.appendChild(grid);
         });
-        containerEl.innerHTML = '';
-        containerEl.appendChild(grid);
-      })
-      .catch(function () {
+
+      }).catch(function () {
         containerEl.innerHTML = '<p style="color:#888">Could not load content. Try refreshing.</p>';
       });
-    });
+    }
+
+    loadFolder(rootFolder);
   };
 })();
