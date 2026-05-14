@@ -111,7 +111,13 @@
           return !hasMedia;
         });
 
-        toShow.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        toShow.sort(function (a, b) {
+          var aIsMd = a.name.endsWith('.md');
+          var bIsMd = b.name.endsWith('.md');
+          if (aIsMd && !bIsMd) return -1;
+          if (!aIsMd && bIsMd) return 1;
+          return a.name.localeCompare(b.name);
+        });
 
         if (toShow.length === 0) {
           containerEl.innerHTML = '<p>Nothing here yet.</p>';
