@@ -30,25 +30,112 @@
 
     <div id="content">
       <h2>Dramatis Personae</h2>
-      <div id="content-body"><p>Loading...</p></div>
+      <div id="dp-container"><p>Loading...</p></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   <script>
-    fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/dramatis-personae.md')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(text => {
-        const div = document.getElementById('content-body');
-        div.innerHTML = marked.parse(text);
-        div.querySelectorAll('a').forEach(a => {
-          a.target = '_blank';
-          a.rel = 'noopener';
+    var CSV_URL = 'https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/dramatis_personae.csv';
+
+    function parseCSV(text) {
+      var lines = text.split(/\r?\n/);
+      var headers = splitLine(lines[0]);
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        var vals = splitLine(lines[i]);
+        var row = {};
+        headers.forEach(function (h, idx) {
+          row[h.trim()] = (vals[idx] || '').trim();
         });
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function splitLine(line) {
+      var fields = [], cur = '', inQ = false;
+      for (var i = 0; i < line.length; i++) {
+        var c = line[i];
+        if (inQ) {
+          if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (c === '"') { inQ = false; }
+          else { cur += c; }
+        } else {
+          if (c === '"') { inQ = true; }
+          else if (c === ',') { fields.push(cur); cur = ''; }
+          else { cur += c; }
+        }
+      }
+      fields.push(cur);
+      return fields;
+    }
+
+    function buildHeading(row) {
+      var age = row.age ? row.age : 'age unknown';
+      var h = row.name + ' (' + age + ')';
+      if (row.title) h += ', ' + row.title;
+      return h;
+    }
+
+    function renderPerson(row) {
+      var entry = document.createElement('div');
+      entry.className = 'person-entry';
+
+      // Thumbnail
+      var thumb = document.createElement('div');
+      thumb.className = 'person-thumb';
+      if (row.portrait) {
+        var img = document.createElement('img');
+        img.src = row.portrait;
+        img.alt = row.name;
+        img.onerror = function () { this.style.visibility = 'hidden'; };
+        thumb.appendChild(img);
+      }
+      entry.appendChild(thumb);
+
+      // Info
+      var info = document.createElement('div');
+      info.className = 'person-info';
+
+      var heading = document.createElement('div');
+      heading.className = 'person-heading';
+      heading.textContent = buildHeading(row);
+      info.appendChild(heading);
+
+      var desc = document.createElement('p');
+      desc.className = 'person-description';
+      desc.textContent = row.description || 'No description available.';
+      info.appendChild(desc);
+
+      entry.appendChild(info);
+      return entry;
+    }
+
+    function renderSection(title, rows, container) {
+      if (rows.length === 0) return;
+      var h3 = document.createElement('h3');
+      h3.textContent = title;
+      container.appendChild(h3);
+      rows.forEach(function (row) {
+        container.appendChild(renderPerson(row));
+      });
+    }
+
+    fetch(CSV_URL)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (text) {
+        var rows = parseCSV(text);
+        var pcs  = rows.filter(function (r) { return r.type === 'player character'; });
+        var npcs = rows.filter(function (r) { return r.type === 'NPC'; });
+        var container = document.getElementById('dp-container');
+        container.innerHTML = '';
+        renderSection('Agents', pcs, container);
+        renderSection('Notable NPCs', npcs, container);
       })
-      .catch(() => {
-        document.getElementById('content-body').innerHTML =
-          '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
+      .catch(function () {
+        document.getElementById('dp-container').innerHTML =
+          '<p style="color:#888">Could not load characters. Try refreshing.</p>';
       });
   </script>
 
