@@ -30,26 +30,13 @@
 
     <div id="content">
       <h2>Miscellaneous</h2>
-      <div id="content-body"><p>Loading...</p></div>
+      <div id="media-container"><p>Loading...</p></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  <script src="media-loader.js"></script>
   <script>
-    fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/miscellaneous.md')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(text => {
-        const div = document.getElementById('content-body');
-        div.innerHTML = marked.parse(text);
-        div.querySelectorAll('a').forEach(a => {
-          a.target = '_blank';
-          a.rel = 'noopener';
-        });
-      })
-      .catch(() => {
-        document.getElementById('content-body').innerHTML =
-          '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
-      });
+    initMediaSection('assets/miscellaneous', document.getElementById('media-container'));
   </script>
 
 </body>

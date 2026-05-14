@@ -157,6 +157,43 @@ body {
   margin-left: 8px;
 }
 
+/* ── Media grid (handouts, maps, miscellaneous) ── */
+.media-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.media-item {
+  background: #1c1c1c;
+  border: 1px solid #2e2e2e;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.media-item img {
+  display: block;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.media-caption {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: #a0a89a;
+  border-top: 1px solid #2e2e2e;
+}
+
+.media-item .media-caption a {
+  color: #7a9e72;
+  text-decoration: none;
+}
+
+.media-item .media-caption a:hover {
+  text-decoration: underline;
+}
+
 /* ── Session log entries ── */
 .session-entry {
   margin-bottom: 32px;
