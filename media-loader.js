@@ -35,13 +35,17 @@
     if (type === 'image') {
       var a = document.createElement('a');
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.className = 'media-thumb-link';
       var img = document.createElement('img');
       img.src = url; img.alt = caption;
       a.appendChild(img);
       wrap.appendChild(a);
       var cap = document.createElement('div');
       cap.className = 'media-caption';
-      cap.textContent = caption;
+      var capLink = document.createElement('a');
+      capLink.href = url; capLink.target = '_blank'; capLink.rel = 'noopener';
+      capLink.textContent = caption;
+      cap.appendChild(capLink);
       wrap.appendChild(cap);
 
     } else if (type === 'pdf') {

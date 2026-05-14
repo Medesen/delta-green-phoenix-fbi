@@ -170,11 +170,24 @@ body {
   border: 1px solid #2e2e2e;
   border-radius: 3px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
-.media-item img {
+.media-item a.media-thumb-link {
   display: block;
-  max-width: 100%;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border-right: 1px solid #2e2e2e;
+}
+
+.media-item a.media-thumb-link img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
   cursor: pointer;
 }
 
@@ -182,7 +195,7 @@ body {
   padding: 8px 14px;
   font-size: 0.9rem;
   color: #a0a89a;
-  border-top: 1px solid #2e2e2e;
+  flex: 1;
 }
 
 .media-item .media-caption a {
