@@ -207,6 +207,41 @@ body {
   text-decoration: underline;
 }
 
+/* ── Standalone markdown sections in media pages ── */
+.media-section {
+  padding: 12px 4px;
+  border-bottom: 1px solid #2e2e2e;
+  line-height: 1.75;
+  color: #b8b2ac;
+}
+
+.media-section:last-child {
+  border-bottom: none;
+}
+
+.media-section h2, .media-section h3 {
+  color: #c8d8c0;
+  font-weight: normal;
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.media-section p { margin-bottom: 10px; }
+
+.media-section ul {
+  margin: 0 0 10px 18px;
+}
+
+.media-section a {
+  color: #7a9e72;
+  text-decoration: none;
+}
+
+.media-section a:hover {
+  text-decoration: underline;
+}
+
 /* ── Session log entries ── */
 .session-entry {
   margin-bottom: 32px;
