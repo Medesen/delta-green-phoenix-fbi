@@ -26,6 +26,11 @@
           <li><a href="miscellaneous.html">Miscellaneous</a></li>
         </ul>
       </nav>
+      <hr class="sidebar-divider">
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="Search…" autocomplete="off">
+        <div id="search-dropdown" class="search-dropdown"></div>
+      </div>
     </div>
 
     <div id="content">
@@ -34,6 +39,7 @@
     </div>
   </div>
 
+  <script src="search.js"></script>
   <script>
     var CSV_URL = 'https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/assets/dramatis_personae/dramatis_personae.csv';
 

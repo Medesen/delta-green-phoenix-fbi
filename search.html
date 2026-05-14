@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phoenix FBI — Delta Green</title>
+  <title>Search — Phoenix FBI - Delta Green</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
     <div id="sidebar">
       <nav>
         <ul>
-          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="index.html">Home</a></li>
           <li><a href="sourcebooks.html">Sourcebooks</a></li>
           <li><a href="dramatis-personae.html">Dramatis Personae</a></li>
           <li><a href="session-logs.html">Session Logs</a></li>
@@ -34,29 +34,12 @@
     </div>
 
     <div id="content">
-      <h2>Home</h2>
-      <div id="content-body"><p>Loading...</p></div>
+      <h2>Search</h2>
+      <div id="search-results"><p>Enter a query in the search bar.</p></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   <script src="search.js"></script>
-  <script>
-    fetch('https://raw.githubusercontent.com/Medesen/delta-green-phoenix-fbi/main/content/home.md')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(text => {
-        const div = document.getElementById('content-body');
-        div.innerHTML = marked.parse(text);
-        div.querySelectorAll('a').forEach(a => {
-          a.target = '_blank';
-          a.rel = 'noopener';
-        });
-      })
-      .catch(() => {
-        document.getElementById('content-body').innerHTML =
-          '<p style="color:#888">Content could not be loaded. Try refreshing.</p>';
-      });
-  </script>
 
 </body>
 </html>

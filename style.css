@@ -304,6 +304,64 @@ body {
   line-height: 1.6;
 }
 
+/* ── Sidebar search ── */
+.sidebar-divider {
+  border: none;
+  border-top: 1px solid #2e2e2e;
+  margin: 16px 0 12px;
+}
+
+#search-box {
+  padding: 0 16px;
+  position: relative;
+}
+
+#search-input {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  color: #d4cfc9;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  border-radius: 3px;
+  outline: none;
+}
+
+#search-input:focus {
+  border-color: #4a6741;
+}
+
+#search-input::placeholder {
+  color: #555;
+}
+
+.search-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  right: 16px;
+  background: #141414;
+  border: 1px solid #2e2e2e;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.search-dropdown-item {
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  color: #7a9e72;
+  cursor: pointer;
+}
+
+.search-dropdown-item:hover {
+  background: #1e1e1e;
+}
+
 /* ── Session log entries ── */
 .session-entry {
   margin-bottom: 32px;

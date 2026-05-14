@@ -26,6 +26,11 @@
           <li><a href="miscellaneous.html">Miscellaneous</a></li>
         </ul>
       </nav>
+      <hr class="sidebar-divider">
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="Search…" autocomplete="off">
+        <div id="search-dropdown" class="search-dropdown"></div>
+      </div>
     </div>
 
     <div id="content">
@@ -39,6 +44,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  <script src="search.js"></script>
   <script>
     const REPO = 'Medesen/delta-green-phoenix-fbi';
     const FOLDER = 'assets/session_logs';
