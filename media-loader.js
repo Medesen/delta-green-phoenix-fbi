@@ -14,6 +14,42 @@
     return { meta: meta, body: text.slice(match[0].length).trim() };
   }
 
+  function splitCSVLine(line) {
+    var fields = [], cur = '', inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (inQ) {
+        if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') { inQ = false; }
+        else { cur += c; }
+      } else {
+        if (c === '"') { inQ = true; }
+        else if (c === ',') { fields.push(cur); cur = ''; }
+        else { cur += c; }
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  function parseMetaCSV(text) {
+    var result = {};
+    var lines = text.split(/\r?\n/);
+    if (!lines.length) return result;
+    var headers = splitCSVLine(lines[0]);
+    for (var i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      var vals = splitCSVLine(lines[i]);
+      var row = {};
+      headers.forEach(function (h, idx) {
+        row[h.trim()] = (vals[idx] || '').trim();
+      });
+      var fname = (row.filename || '').trim();
+      if (fname) result[fname] = row;
+    }
+    return result;
+  }
+
   function fileType(name) {
     var ext = name.split('.').pop().toLowerCase();
     if (['jpg','jpeg','png','gif','webp'].indexOf(ext) >= 0) return 'image';
@@ -32,6 +68,13 @@
           .filter(function (l) { return l && !l.startsWith('#'); });
       })
       .catch(function () { return []; });
+  }
+
+  function fetchMetaCSV(folder) {
+    return fetch(RAW + folder + '/metadata.csv')
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(parseMetaCSV)
+      .catch(function () { return {}; });
   }
 
   function renderFolderItem(name, onClick) {
@@ -129,58 +172,38 @@
       Promise.all([
         fetchIgnoreList(folder),
         fetch(API + folder)
-          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }),
+        fetchMetaCSV(folder)
       ]).then(function (results) {
         var ignored  = results[0];
         var allItems = results[1];
+        var metaMap  = results[2];
 
-        var skip = ignored.concat(['.gitkeep', '.mediaignore']);
+        var skip = ignored.concat(['.gitkeep', '.mediaignore', 'metadata.csv']);
         var visible = allItems.filter(function (f) { return skip.indexOf(f.name) === -1; });
 
         var dirs      = visible.filter(function (f) { return f.type === 'dir'; });
         var fileItems = visible.filter(function (f) { return f.type === 'file'; });
 
-        var mdSet = {};
-        fileItems.forEach(function (f) { if (f.name.endsWith('.md')) mdSet[f.name] = true; });
-
-        // Standalone .md files (no matching media companion)
-        var standaloneMd = fileItems.filter(function (f) {
-          if (!f.name.endsWith('.md')) return false;
-          var base = f.name.slice(0, -3);
-          return !fileItems.some(function (m) {
-            return !m.name.endsWith('.md') && m.name.slice(0, m.name.lastIndexOf('.')) === base;
-          });
-        });
-
-        // Media files (non-.md)
-        var mediaFiles = fileItems.filter(function (f) { return !f.name.endsWith('.md'); });
+        var standaloneMd = fileItems.filter(function (f) { return f.name.endsWith('.md'); });
+        var mediaFiles   = fileItems.filter(function (f) { return !f.name.endsWith('.md'); });
 
         dirs.sort(function (a, b) { return a.name.localeCompare(b.name); });
         standaloneMd.sort(function (a, b) { return a.name.localeCompare(b.name); });
         mediaFiles.sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-        // Fetch standalone .md content
+        // Fetch standalone .md content for rendering
         var mdPromises = standaloneMd.map(function (file) {
           return fetch(RAW + folder + '/' + encodeURIComponent(file.name))
             .then(function (r) { return r.text(); })
-            .then(function (text) { return { kind: 'section', html: marked.parse(parseFrontmatter(text).body) }; });
+            .then(function (text) {
+              return { kind: 'section', html: marked.parse(parseFrontmatter(text).body) };
+            });
         });
 
-        // Fetch companion metadata for media files
-        var mediaPromises = mediaFiles.map(function (file) {
-          var companion = file.name.slice(0, file.name.lastIndexOf('.')) + '.md';
-          if (mdSet[companion]) {
-            return fetch(RAW + folder + '/' + encodeURIComponent(companion))
-              .then(function (r) { return r.text(); })
-              .then(function (text) { return { kind: 'media', file: file, meta: parseFrontmatter(text).meta }; });
-          }
-          return Promise.resolve({ kind: 'media', file: file, meta: {} });
-        });
-
-        return Promise.all(mdPromises.concat(mediaPromises)).then(function (resolved) {
+        return Promise.all(mdPromises).then(function (mdResolved) {
           containerEl.innerHTML = '';
 
-          // Back button
           if (history.length > 0) {
             var backP = document.createElement('p');
             var backA = document.createElement('a');
@@ -203,7 +226,7 @@
           grid.className = 'media-grid';
 
           // 1. Standalone .md sections
-          resolved.slice(0, standaloneMd.length).forEach(function (item) {
+          mdResolved.forEach(function (item) {
             grid.appendChild(renderMarkdownSection(item.html));
           });
 
@@ -215,9 +238,10 @@
             }));
           });
 
-          // 3. Media files
-          resolved.slice(standaloneMd.length).forEach(function (item) {
-            grid.appendChild(renderMediaItem(item.file.name, item.meta, folder));
+          // 3. Media files — metadata from CSV
+          mediaFiles.forEach(function (file) {
+            var meta = metaMap[file.name] || {};
+            grid.appendChild(renderMediaItem(file.name, meta, folder));
           });
 
           containerEl.appendChild(grid);

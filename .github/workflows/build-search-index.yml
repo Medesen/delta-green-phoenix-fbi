@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check metadata completeness
+        run: python3 scripts/check_metadata.py
+
       - name: Build index
         run: python3 scripts/build_index.py
 

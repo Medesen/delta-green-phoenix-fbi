@@ -54,13 +54,26 @@ def read_text(path):
 
 def read_ignore(folder):
     path = os.path.join(folder, '.mediaignore')
-    ignored = {'.gitkeep', '.mediaignore'}
+    ignored = {'.gitkeep', '.mediaignore', 'metadata.csv'}
     if os.path.exists(path):
         for line in read_text(path).splitlines():
             line = line.strip()
             if line and not line.startswith('#'):
                 ignored.add(line)
     return ignored
+
+
+def read_meta_csv(folder):
+    path = os.path.join(folder, 'metadata.csv')
+    if not os.path.exists(path):
+        return {}
+    meta_map = {}
+    with open(path, encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            fname = row.get('filename', '').strip()
+            if fname:
+                meta_map[fname] = row
+    return meta_map
 
 
 items = []
@@ -113,50 +126,42 @@ def scan_folder(folder, page_url):
     if not os.path.isdir(folder):
         return
     ignored = read_ignore(folder)
+    meta_map = read_meta_csv(folder)
 
     all_names = [n for n in os.listdir(folder) if n not in ignored and not n.startswith('.')]
-    md_names = {n for n in all_names if n.endswith('.md')}
-    non_md = [n for n in all_names if not n.endswith('.md') and os.path.isfile(os.path.join(folder, n))]
     subdirs = [n for n in all_names if os.path.isdir(os.path.join(folder, n))]
+    files = [n for n in all_names if os.path.isfile(os.path.join(folder, n))]
 
-    # Standalone .md files (no matching media companion in this folder)
-    for fname in sorted(md_names):
-        base = fname[:-3]
-        has_companion = any(
-            not n.endswith('.md') and n[:n.rfind('.')] == base
-            for n in non_md
-        )
-        if has_companion:
-            continue
-        meta, body = parse_frontmatter(read_text(os.path.join(folder, fname)))
-        tags = parse_tags(meta.get('tags', ''))
+    standalone_md = [n for n in files if n.endswith('.md')]
+    media_files = [n for n in files if not n.endswith('.md')]
+
+    # Standalone .md files — content from file, tags/caption from CSV
+    for fname in sorted(standalone_md):
+        row = meta_map.get(fname, {})
+        tags = parse_tags(row.get('tags', ''))
         all_tags.update(tags)
+        _, body = parse_frontmatter(read_text(os.path.join(folder, fname)))
         items.append({
             'type': 'media',
-            'title': meta.get('caption', base),
+            'title': row.get('caption', fname[:-3]),
             'url': page_url,
             'body': body,
             'tags': tags,
         })
 
-    # Media files (non-.md)
-    for fname in sorted(non_md):
-        base = fname[:fname.rfind('.')]
-        companion = base + '.md'
-        meta = {}
-        if companion in md_names:
-            meta, _ = parse_frontmatter(read_text(os.path.join(folder, companion)))
-        tags = parse_tags(meta.get('tags', ''))
+    # Media files — all metadata from CSV
+    for fname in sorted(media_files):
+        row = meta_map.get(fname, {})
+        tags = parse_tags(row.get('tags', ''))
         all_tags.update(tags)
         items.append({
             'type': 'media',
-            'title': meta.get('caption', fname),
+            'title': row.get('caption', fname),
             'url': page_url,
-            'body': meta.get('notes', ''),
+            'body': row.get('notes', ''),
             'tags': tags,
         })
 
-    # Recurse into subdirectories
     for d in sorted(subdirs):
         scan_folder(os.path.join(folder, d), page_url)
 
