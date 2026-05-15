@@ -182,6 +182,8 @@ def scan_folder(folder, page_url):
 
 scan_folder(os.path.join(REPO_ROOT, 'assets', 'handouts'), 'handouts.html')
 scan_folder(os.path.join(REPO_ROOT, 'assets', 'maps'), 'maps.html')
+scan_folder(os.path.join(REPO_ROOT, 'assets', 'locations'), 'locations.html')
+scan_folder(os.path.join(REPO_ROOT, 'assets', 'objects'), 'objects.html')
 scan_folder(os.path.join(REPO_ROOT, 'assets', 'miscellaneous'), 'miscellaneous.html')
 
 

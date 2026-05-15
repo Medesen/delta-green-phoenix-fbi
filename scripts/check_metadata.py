@@ -17,6 +17,8 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_FOLDERS = [
     'assets/handouts',
     'assets/maps',
+    'assets/locations',
+    'assets/objects',
     'assets/miscellaneous',
 ]
 
