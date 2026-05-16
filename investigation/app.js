@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    Configuration
 ───────────────────────────────────────────────────────────── */
-var WORKER_URL      = 'https://YOUR_WORKER.YOUR_SUBDOMAIN.workers.dev';
+var WORKER_URL      = 'https://dg-investigation.medesen.workers.dev';
 var SEARCH_INDEX_URL = 'https://medesen.github.io/delta-green-phoenix-fbi/search_index.json';
 var AUTOSAVE_KEY    = 'dg_investigation_autosave';
 var AUTOSAVE_MS     = 3 * 60 * 1000; // 3 minutes
