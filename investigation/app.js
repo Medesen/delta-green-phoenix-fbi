@@ -778,7 +778,7 @@ document.getElementById('btn-load-draft').addEventListener('click', function() {
 function checkGMMode() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('gm') !== 'true') return;
-  var passphrase = prompt('GM passphrase:');
+  var passphrase = (prompt('GM passphrase:') || '').trim();
   if (!passphrase) return;
   // Validate against worker
   fetch(WORKER_URL + '/gm-auth', {
