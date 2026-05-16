@@ -20,6 +20,7 @@ var EDGE_COLORS  = ['#111111','#8B1A1A','#1A2E8B','#1A6B2E','#5B1A8B','#8B5B1A',
    State
 ───────────────────────────────────────────────────────────── */
 var cy;
+var currentLayout = null;
 var gmMode       = false;
 var gmPassphrase = '';
 var connectOrigin = null;   // node id when in connect mode
@@ -144,7 +145,8 @@ function buildStyle(showLabels) {
 }
 
 function runLayout() {
-  cy.layout({
+  if (currentLayout) currentLayout.stop();
+  currentLayout = cy.layout({
     name: 'cola',
     animate: true,
     infinite: true,
@@ -152,7 +154,8 @@ function runLayout() {
     randomize: false,
     nodeSpacing: 60,
     edgeLength: 180,
-  }).run();
+  });
+  currentLayout.run();
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -323,31 +326,6 @@ function bindCyEvents() {
   cy.on('dragfree', 'node', function() { markDirty(); });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Edge-of-screen panning
-───────────────────────────────────────────────────────────── */
-var PAN_ZONE  = 60;   // px from edge
-var PAN_SPEED = 8;    // px per frame
-var panFrame  = null;
-var panDx     = 0;
-var panDy     = 0;
-
-document.addEventListener('mousemove', function(e) {
-  var w = window.innerWidth, h = window.innerHeight;
-  panDx = 0; panDy = 0;
-  if (e.clientX < PAN_ZONE)     panDx =  PAN_SPEED;
-  if (e.clientX > w - PAN_ZONE) panDx = -PAN_SPEED;
-  if (e.clientY < PAN_ZONE)     panDy =  PAN_SPEED;
-  if (e.clientY > h - PAN_ZONE) panDy = -PAN_SPEED;
-});
-
-function panLoop() {
-  if (panDx !== 0 || panDy !== 0) {
-    cy.panBy({ x: panDx, y: panDy });
-  }
-  panFrame = requestAnimationFrame(panLoop);
-}
-panFrame = requestAnimationFrame(panLoop);
 
 /* ─────────────────────────────────────────────────────────────
    Keyboard shortcuts
