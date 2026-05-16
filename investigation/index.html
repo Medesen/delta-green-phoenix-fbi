@@ -16,17 +16,34 @@
 
   <!-- Toolbar (top-right) -->
   <div id="toolbar">
-    <div class="toolbar-group">
-      <button class="tb-btn" id="btn-zoom-in"  title="Zoom in (+)">+</button>
-      <button class="tb-btn" id="btn-zoom-out" title="Zoom out (−)">−</button>
-      <button class="tb-btn" id="btn-fit"      title="Fit graph">⊡</button>
-    </div>
-    <div class="toolbar-group">
-      <span class="tb-label">Edge labels</span>
-      <label class="toggle">
-        <input type="checkbox" id="toggle-labels" checked>
-        <span class="toggle-slider"></span>
-      </label>
+    <div id="toolbar-panel">
+      <div class="toolbar-group" id="zoom-group">
+        <button class="tb-btn" id="btn-zoom-in"  title="Zoom in (+)">+</button>
+        <button class="tb-btn" id="btn-zoom-out" title="Zoom out (−)">−</button>
+        <button class="tb-btn" id="btn-fit"      title="Fit graph">⊡</button>
+      </div>
+      <div class="toolbar-group" id="labels-group">
+        <span class="tb-label">Edge labels</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-labels" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="toolbar-group font-group">
+        <span class="tb-label">Font size</span>
+        <div class="font-row">
+          <span class="tb-label muted">Nodes</span>
+          <button class="tb-btn" id="btn-node-font-down">−</button>
+          <span class="tb-size" id="node-font-display">11</span>
+          <button class="tb-btn" id="btn-node-font-up">+</button>
+        </div>
+        <div class="font-row">
+          <span class="tb-label muted">Edges</span>
+          <button class="tb-btn" id="btn-edge-font-down">−</button>
+          <span class="tb-size" id="edge-font-display">10</span>
+          <button class="tb-btn" id="btn-edge-font-up">+</button>
+        </div>
+      </div>
     </div>
   </div>
 

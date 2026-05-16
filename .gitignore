@@ -1,6 +1,7 @@
 # Secret files — never commit these
 *.txt
 GitHub_fine-tuned_access_token_to_Cloudflare.txt
+Cloudflare_worker_passphrase.txt
 
 # Search index is built at deploy time
 search_index.json

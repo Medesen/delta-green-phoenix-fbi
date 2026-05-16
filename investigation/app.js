@@ -27,6 +27,8 @@ var connectOrigin = null;   // node id when in connect mode
 var connectAnim   = null;   // requestAnimationFrame handle
 var dirty         = false;
 var searchIndex   = null;
+var nodeFontSize  = 11;
+var edgeFontSize  = 10;
 
 /* ─────────────────────────────────────────────────────────────
    Utility
@@ -93,7 +95,7 @@ function buildStyle(showLabels) {
         'label': 'data(label)',
         'text-valign': 'center',
         'text-halign': 'center',
-        'font-size': 11,
+        'font-size': nodeFontSize,
         'color': '#111',
         'text-wrap': 'ellipsis',
         'text-max-width': '70px',
@@ -129,7 +131,7 @@ function buildStyle(showLabels) {
         },
         'curve-style': 'bezier',
         'label': showLabels ? 'data(label)' : '',
-        'font-size': 10,
+        'font-size': edgeFontSize,
         'color': '#333',
         'text-background-color': '#fff',
         'text-background-opacity': 0.8,
@@ -149,7 +151,8 @@ function runLayout() {
   currentLayout = cy.layout({
     name: 'cola',
     animate: true,
-    infinite: true,
+    infinite: false,
+    maxSimulationTime: 3000,
     fit: false,
     randomize: false,
     nodeSpacing: 60,
@@ -222,14 +225,16 @@ function animateConnectLine() {
 }
 
 function onConnectCanvasClick(e) {
-  // Check if click lands on a Cytoscape node
-  var target = cy.elementFromPoint(e.clientX, e.clientY);
-  if (target && target.isNode && target.isNode() && target.id() !== connectOrigin) {
-    var originId = connectOrigin;
-    stopConnectMode();
+  var originId = connectOrigin;
+  stopConnectMode();
+  var x = e.clientX, y = e.clientY;
+  var target = null;
+  cy.nodes().forEach(function(node) {
+    var bb = node.renderedBoundingBox();
+    if (x >= bb.x1 && x <= bb.x2 && y >= bb.y1 && y <= bb.y2) target = node;
+  });
+  if (target && target.id() !== originId) {
     openEdgeModal(originId, target.id());
-  } else {
-    stopConnectMode();
   }
 }
 
@@ -280,39 +285,51 @@ document.addEventListener('keydown', function(e) {
    Cytoscape event bindings
 ───────────────────────────────────────────────────────────── */
 function bindCyEvents() {
-  // Right-click on empty canvas
-  cy.on('cxttap', function(e) {
-    if (e.target !== cy) return;
+  // Use native contextmenu event instead of cy.on('cxttap') — Cytoscape's cxttap
+  // stops firing after a pan due to an internal state bug in cytoscape-cola.
+  document.getElementById('cy').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+
     if (connectOrigin) { stopConnectMode(); return; }
-    var pos = e.renderedPosition || e.position;
-    var graphPos = e.position;
-    showCtxMenu(pos.x, pos.y, [
+
+    var x = e.clientX, y = e.clientY;
+
+    // Hit-test nodes first
+    var hitNode = null;
+    cy.nodes().forEach(function(node) {
+      var bb = node.renderedBoundingBox();
+      if (x >= bb.x1 && x <= bb.x2 && y >= bb.y1 && y <= bb.y2) hitNode = node;
+    });
+    if (hitNode) {
+      showCtxMenu(x, y, [
+        { label: 'Edit',    action: function() { openNodeModal(hitNode); } },
+        { label: 'Connect', action: function() { startConnectMode(hitNode.id()); } },
+        { label: 'Delete',  action: function() { deleteNode(hitNode); }, danger: true },
+        { label: 'Cancel',  action: function() {} },
+      ]);
+      return;
+    }
+
+    // Hit-test edges
+    var hitEdge = null;
+    cy.edges().forEach(function(edge) {
+      var bb = edge.renderedBoundingBox({ includeLabels: false });
+      if (x >= bb.x1 && x <= bb.x2 && y >= bb.y1 && y <= bb.y2) hitEdge = edge;
+    });
+    if (hitEdge) {
+      showCtxMenu(x, y, [
+        { label: 'Edit edge',   action: function() { openEdgeModal(null, null, hitEdge); } },
+        { label: 'Delete edge', action: function() { deleteEdge(hitEdge); }, danger: true },
+        { label: 'Cancel',      action: function() {} },
+      ]);
+      return;
+    }
+
+    // Background: convert viewport coords to graph position for node placement
+    var pan = cy.pan(), zoom = cy.zoom();
+    var graphPos = { x: (x - pan.x) / zoom, y: (y - pan.y) / zoom };
+    showCtxMenu(x, y, [
       { label: 'Create node', action: function() { openNodeModal(null, graphPos); } },
-      { label: 'Cancel',      action: function() {} },
-    ]);
-  });
-
-  // Right-click on node
-  cy.on('cxttap', 'node', function(e) {
-    if (connectOrigin) { stopConnectMode(); return; }
-    var node = e.target;
-    var pos  = e.renderedPosition || { x: e.originalEvent.clientX, y: e.originalEvent.clientY };
-    showCtxMenu(pos.x, pos.y, [
-      { label: 'Edit',    action: function() { openNodeModal(node); } },
-      { label: 'Connect', action: function() { startConnectMode(node.id()); } },
-      { label: 'Delete',  action: function() { deleteNode(node); }, danger: true },
-      { label: 'Cancel',  action: function() {} },
-    ]);
-  });
-
-  // Right-click on edge
-  cy.on('cxttap', 'edge', function(e) {
-    if (connectOrigin) { stopConnectMode(); return; }
-    var edge = e.target;
-    var pos  = e.renderedPosition || { x: e.originalEvent.clientX, y: e.originalEvent.clientY };
-    showCtxMenu(pos.x, pos.y, [
-      { label: 'Edit edge',   action: function() { openEdgeModal(null, null, edge); } },
-      { label: 'Delete edge', action: function() { deleteEdge(edge); }, danger: true },
       { label: 'Cancel',      action: function() {} },
     ]);
   });
@@ -324,6 +341,16 @@ function bindCyEvents() {
 
   // Mark dirty on node move
   cy.on('dragfree', 'node', function() { markDirty(); });
+
+  // Sync background grid with viewport (pan + zoom); node drags don't affect viewport
+  var cyEl = document.getElementById('cy');
+  function updateGrid() {
+    var pan = cy.pan(), zoom = cy.zoom(), size = 32 * zoom;
+    cyEl.style.backgroundSize     = size + 'px ' + size + 'px';
+    cyEl.style.backgroundPosition = pan.x + 'px ' + pan.y + 'px';
+  }
+  cy.on('viewport', updateGrid);
+  updateGrid();
 }
 
 
@@ -351,6 +378,24 @@ document.getElementById('btn-fit').addEventListener('click', function() {
 
 document.getElementById('toggle-labels').addEventListener('change', function() {
   cy.style(buildStyle(this.checked));
+});
+
+function applyFontSizes() {
+  cy.style(buildStyle(document.getElementById('toggle-labels').checked));
+  document.getElementById('node-font-display').textContent = nodeFontSize;
+  document.getElementById('edge-font-display').textContent = edgeFontSize;
+}
+document.getElementById('btn-node-font-up').addEventListener('click', function() {
+  if (nodeFontSize < 32) { nodeFontSize++; applyFontSizes(); }
+});
+document.getElementById('btn-node-font-down').addEventListener('click', function() {
+  if (nodeFontSize > 6) { nodeFontSize--; applyFontSizes(); }
+});
+document.getElementById('btn-edge-font-up').addEventListener('click', function() {
+  if (edgeFontSize < 32) { edgeFontSize++; applyFontSizes(); }
+});
+document.getElementById('btn-edge-font-down').addEventListener('click', function() {
+  if (edgeFontSize > 6) { edgeFontSize--; applyFontSizes(); }
 });
 
 /* ─────────────────────────────────────────────────────────────
@@ -547,7 +592,6 @@ function openNodeModal(existingNode, graphPos) {
         },
         position: graphPos || { x: cy.width()/2, y: cy.height()/2 },
       });
-      runLayout();
     }
     markDirty();
   });
